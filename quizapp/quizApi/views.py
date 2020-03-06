@@ -1,15 +1,18 @@
+from django.contrib.auth.models import User
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse, Http404
 from django.views.decorators.csrf import csrf_exempt
 
-from rest_framework import status
+from rest_framework import status, permissions, generics
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.parsers import JSONParser
 from rest_framework.views import APIView
+from rest_framework.mixins import CreateModelMixin
+from .permissions import IsOwnerOrReadOnly
 
 from .models import MCQquestion
-from .serializers import MCQquestionSerializer
+from .serializers import MCQquestionSerializer, UserSerializer
 # Create your views here.
 
 
@@ -18,13 +21,22 @@ class QuestionList(APIView):
         List all questions or create new
     """
 
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def perform_create(self, serializer):
+        print("\n\n\n ********************************** Im Perform Create ****** \n\n\n")
+        return serializer.save(creator=self.request.user)
+
     def get(self, request, format=None):
         question = MCQquestion.objects.all()
         serializer = MCQquestionSerializer(question, many=True)
         return Response(serializer.data)
 
     def post(self, request, format=None):
+        print("\n\n\n {} \n\n\n {} \n\n\n {} :::: {} ".format(
+            request.headers, request.body, request.user, request.data))
         serializer = MCQquestionSerializer(data=request.data)
+        # print("hello")
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -35,6 +47,9 @@ class QuestionDetail(APIView):
     """
     Retrieve, update or delete a snippet instance.
     """
+    permission_classes = [
+        permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly
+    ]
 
     def get_object(self, pk):
         try:
@@ -59,6 +74,17 @@ class QuestionDetail(APIView):
         question = self.get_object(pk)
         question.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class UserList(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+
+class UserDetail(generics.RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
 
 # @api_view(['GET', 'POST'])
 # def MCQquestion_list(request, format=None):

@@ -43,6 +43,11 @@ class MCQquestion(models.Model):
         max_length=1,
         blank=False
     )
+    creator = models.ForeignKey(
+        'auth.User',
+        related_name='questions',
+        on_delete=models.CASCADE,
+    )
 
     def __str__(self):
         return """Question  : {}\n
