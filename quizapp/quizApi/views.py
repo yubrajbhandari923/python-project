@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, JsonResponse, Http404
 from django.views.decorators.csrf import csrf_exempt
 
@@ -8,38 +8,37 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.parsers import JSONParser
 from rest_framework.views import APIView
-from rest_framework.mixins import CreateModelMixin
+from rest_framework.generics import GenericAPIView, ListCreateAPIView
+from rest_framework.mixins import ListModelMixin, CreateModelMixin
 from .permissions import IsOwnerOrReadOnly
 
 from .models import MCQquestion
-from .serializers import MCQquestionSerializer, UserSerializer
+from .serializers import MCQquestionSerializer,MCQquestionAddSerializer , UserSerializer
 # Create your views here.
 
 
-class QuestionList(APIView):
+class QuestionList(ListCreateAPIView):
     """
         List all questions or create new
     """
-
+    queryset = MCQquestion.objects.all()
+    serializer_class = MCQquestionSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
-    def perform_create(self, serializer):
-        print("\n\n\n ********************************** Im Perform Create ****** \n\n\n")
-        return serializer.save(creator=self.request.user)
-
-    def get(self, request, format=None):
-        question = MCQquestion.objects.all()
-        serializer = MCQquestionSerializer(question, many=True)
-        return Response(serializer.data)
-
     def post(self, request, format=None):
+        
         print("\n\n\n {} \n\n\n {} \n\n\n {} :::: {} ".format(
             request.headers, request.body, request.user, request.data))
-        serializer = MCQquestionSerializer(data=request.data)
-        # print("hello")
-        if serializer.is_valid():
+
+
+        user_pk = get_object_or_404(User, username=request.user)
+        request.data["creator"] = user_pk.pk
+        serializer = MCQquestionAddSerializer(data=request.data)
+        
+        if serializer.is_valid() :
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

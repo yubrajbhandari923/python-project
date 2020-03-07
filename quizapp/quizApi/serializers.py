@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 class MCQquestionSerializer(serializers.ModelSerializer):
 
     class Meta:
-        creator = serializers.ReadOnlyField(source='creator.username')
+        creator = serializers.ReadOnlyField(source="creator.username")
         model = MCQquestion
         fields = [
             'id',
@@ -16,6 +16,23 @@ class MCQquestionSerializer(serializers.ModelSerializer):
             'optB',
             'optC',
             'optD',
+            'creator'
+        ]
+
+
+class MCQquestionAddSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = MCQquestion
+        fields = [
+            'id',
+            'mainQuestion',
+            'field',
+            'optA',
+            'optB',
+            'optC',
+            'optD',
+            'corrOpt',
             'creator'
         ]
 

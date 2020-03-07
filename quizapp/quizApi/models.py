@@ -55,6 +55,8 @@ class MCQquestion(models.Model):
                   Option B  : {}\n
                   Option C  : {}\n
                   Option D  : {}\n
+                  CorOption : {}\n
+                  Created_by: {}\n
                   Created_on: {}\n
         """.format(
             self.mainQuestion,
@@ -62,5 +64,7 @@ class MCQquestion(models.Model):
             self.optB,
             self.optC,
             self.optD,
+            self.corrOpt,
+            self.creator,
             self.created
         )

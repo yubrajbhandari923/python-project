@@ -9,6 +9,5 @@ urlpatterns = [
     path('users/', UserList.as_view()),
     path('users/<int:pk>/', UserDetail.as_view()),
     path('api-auth/', include('rest_framework.urls')),
-
 ]
 urlpatterns = format_suffix_patterns(urlpatterns)
