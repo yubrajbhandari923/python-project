@@ -12,8 +12,8 @@ from rest_framework.generics import GenericAPIView, ListCreateAPIView
 from rest_framework.mixins import ListModelMixin, CreateModelMixin
 from .permissions import IsOwnerOrReadOnly
 
-from .models import MCQquestion
-from .serializers import MCQquestionSerializer,MCQquestionAddSerializer , UserSerializer
+from .models import AllQuestion, TextQuestion, Hintquestion, MCQquestion
+from .serializers import AllSerializer, TextSerializer, HintSerializer, MCQSerializer, UserSerializer
 # Create your views here.
 
 
@@ -21,25 +21,25 @@ class QuestionList(ListCreateAPIView):
     """
         List all questions or create new
     """
-    queryset = MCQquestion.objects.all()
-    serializer_class = MCQquestionSerializer
+    queryset = AllQuestion.objects.all()
+    serializer_class = AllSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def post(self, request, format=None):
-        
+
         print("\n\n\n {} \n\n\n {} \n\n\n {} :::: {} ".format(
             request.headers, request.body, request.user, request.data))
-
-
-        user_pk = get_object_or_404(User, username=request.user)
-        request.data["creator"] = user_pk.pk
-        serializer = MCQquestionAddSerializer(data=request.data)
-        
-        if serializer.is_valid() :
+#
+        request.data["creator"] = request.user.username
+        print(request.data)
+        serializer = AllSerializer(data=request.data)
+#
+        if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
+#
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#
 
 
 class QuestionDetail(APIView):
@@ -58,12 +58,12 @@ class QuestionDetail(APIView):
 
     def get(self, request, pk, format=None):
         question = self.get_object(pk)
-        serializer = MCQquestionSerializer(question)
+        serializer = MCQSerializer(question)
         return Response(serializer.data)
 
     def put(self, request, pk, format=None):
         question = self.get_object(pk)
-        serializer = MCQquestionSerializer(question, data=request.data)
+        serializer = MCQSerializer(question, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)

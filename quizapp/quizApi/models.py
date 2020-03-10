@@ -69,6 +69,9 @@ class TextQuestion(models.Model):
         limit_choices_to={'questionType': 'txt'}
     )
 
+    def __str__(self):
+        return " 'Answer' : '{}' ".format(self.answer)
+
 
 class Hintquestion(models.Model):
     noOfHints = models.IntegerField(
@@ -125,7 +128,18 @@ class Hintquestion(models.Model):
     )
 
     def __str__(self):
-        return "Here are {}, Correct is {}".format(self.noOfHints, self.correctAnswer)
+        return " 'noOfHints' : '{}', 'hintA': '{}', 'hintB': '{}', 'hintC': '{}', 'hintD': '{}', 'hintE': '{}', 'hintF': '{}', 'hintG': '{}','hintH': '{}','hintI': '{}', 'correctAnswer' : '{}' ".format(
+            self.noOfHints,
+            self.hintA,
+            self.hintB,
+            self.hintC,
+            self.hintD,
+            self.hintE,
+            self.hintF,
+            self.hintG,
+            self.hintH,
+            self.hintI,
+            self.correctAnswer)
 
 
 class MCQquestion(models.Model):
@@ -157,13 +171,7 @@ class MCQquestion(models.Model):
     )
 
     def __str__(self):
-        return """  Question  : \n
-                    Option A  : {}\n
-                    Option B  : {}\n
-                    Option C  : {}\n
-                    Option D  : {}\n
-                    CorOption : {}\n
-            """.format(
+        return """ 'optA' : '{}','optB' : '{}','optC' : '{}','optD' : '{}','corrOpt' : '{}' """.format(
             self.optA,
             self.optB,
             self.optC,
