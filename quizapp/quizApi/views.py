@@ -1,35 +1,30 @@
 from django.contrib.auth.models import User
 from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponse, JsonResponse, Http404
-from django.views.decorators.csrf import csrf_exempt
 
-from rest_framework import status, permissions, generics
-from rest_framework.decorators import api_view
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
-from rest_framework.parsers import JSONParser
-from rest_framework.views import APIView
-from rest_framework.generics import GenericAPIView, ListCreateAPIView
-from rest_framework.mixins import ListModelMixin, CreateModelMixin
+from rest_framework.viewsets import ModelViewSet
 from .permissions import IsOwnerOrReadOnly
 
 from .models import AllQuestion, TextQuestion, Hintquestion, MCQquestion
 from .serializers import AllSerializer, TextSerializer, HintSerializer, MCQSerializer, UserSerializer
-# Create your views here.
 
 
-class QuestionList(ListCreateAPIView):
+
+class QuestionList(ModelViewSet):
     """
         List all questions or create new
     """
     queryset = AllQuestion.objects.all()
     serializer_class = AllSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
-    def post(self, request, format=None):
+    def create(self, request):
 
-        print("\n\n\n {} \n\n\n {} \n\n\n {} :::: {} ".format(
-            request.headers, request.body, request.user, request.data))
-#
+        # print("\n\n\n {} \n\n\n {} \n\n\n {} :::: {} ".format(
+        #     request.headers, request.body, request.user, request.data))
+        #
         request.data["creator"] = request.user.username
         print(request.data)
         serializer = AllSerializer(data=request.data)
@@ -39,148 +34,133 @@ class QuestionList(ListCreateAPIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 #
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def retrieve(self, request, pk=None, format=None):
+        question = get_object_or_404(AllQuestion, pk=pk)
+        serializer = self.serializer_class(question)
+        return Response(serializer.data)
+
 #
 
 
-class QuestionDetail(APIView):
-    """
-    Retrieve, update or delete a snippet instance.
-    """
-    permission_classes = [
-        permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly
-    ]
-
-    def get_object(self, pk):
-        try:
-            return MCQquestion.objects.get(pk=pk)
-        except MCQquestion.DoesNotExist:
-            raise Http404
-
-    def get(self, request, pk, format=None):
-        question = self.get_object(pk)
-        serializer = MCQSerializer(question)
-        return Response(serializer.data)
-
-    def put(self, request, pk, format=None):
-        question = self.get_object(pk)
-        serializer = MCQSerializer(question, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request, pk, format=None):
-        question = self.get_object(pk)
-        question.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class UserList(generics.ListAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-
-
-class UserDetail(generics.RetrieveAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-
-
-# @api_view(['GET', 'POST'])
-# def MCQquestion_list(request, format=None):
+# class QuestionDetail(APIView):
 #     """
-#         List all questions or create new
+#     Retrieve, update or delete a snippet instance.
 #     """
-#     if request.method == 'GET':
-#         question = MCQquestion.objects.all()
-#         serializer = MCQquestionSerializer(question, many=True)
+#     permission_classes = [
+#         permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly
+#     ]
+
+#     def get_object(self, pk):
+#         try:
+#             return MCQquestion.objects.get(pk=pk)
+#         except MCQquestion.DoesNotExist:
+#             raise Http404
+
+#     def get(self, request, pk, format=None):
+#         question = self.get_object(pk)
+#         serializer = MCQSerializer(question)
 #         return Response(serializer.data)
 
-#     elif request.method == 'POST':
-#         serializer = MCQquestionSerializer(question, many=True)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data, status=status.HTTP_201_CREATED)
-#         return Response(serializer.errors, status=status.HTTP_404_BAD_REQUEST)
-
-
-# @api_view(['GET', 'PUT', 'DELETE'])
-# def MCQquestion_detail(request, pk, format=None):
-#     """
-#     Retrieve, update or delete a code snippet.
-#     """
-#     try:
-#         question = MCQquestion.objects.get(pk=pk)
-#     except question.DoesNotExist:
-#         return Response(status=status.HTTP_404_NOT_FOUND)
-
-#     if request.method == 'GET':
-#         serializer = MCQquestionSerializer(question)
-#         return Response(serializer.data)
-
-#     elif request.method == 'PUT':
-#         serializer = Serializer(question, data=request.data)
+#     def put(self, request, pk, format=None):
+#         question = self.get_object(pk)
+#         serializer = MCQSerializer(question, data=request.data)
 #         if serializer.is_valid():
 #             serializer.save()
 #             return Response(serializer.data)
 #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-#     elif request.method == 'DELETE':
+#     def delete(self, request, pk, format=None):
+#         question = self.get_object(pk)
 #         question.delete()
 #         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-# @csrf_exempt
-# def MCQquestion_list(request):
-#     """
-#     List all code questions, or create a new snippet.
-#     """
-#     if request.method == 'GET':
-#         MCQquestions = MCQquestion.objects.all()
-#         serializer = MCQquestionSerializer(MCQquestions, many=True)
-#         return JsonResponse(serializer.data, safe=False)
-
-#     elif request.method == 'POST':
-
-#         print("\n\n\n\n")
-#         print("\n\n\n\n")
-#         print(request.headers)
-#         print("\n\n\n\n")
-#         print(request.body)
-#         print("\n\n\n\n")
-#         print("\n\n\n\n")
-#         data = JSONParser().parse(request)
-#         print("\n\n\n\n")
-#         print("request got :", data)
-#         print("\n\n\n\n")
-#         serializer = MCQquestionSerializer(data=data)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return JsonResponse(serializer.data, status=201)
-#         return JsonResponse(serializer.errors, status=400)
+# class UserList(generics.ListAPIView):
+#     queryset = User.objects.all()
+#     serializer_class = UserSerializer
 
 
-# @csrf_exempt
-# def MCQquestion_detail(request, pk):
-#     """
-#     Retrieve, update or delete a code snippet.
-#     """
-#     try:
-#         question = MCQquestion.objects.get(pk=pk)
-#     except question.DoesNotExist:
-#         return HttpResponse(status=404)
+# class UserDetail(generics.RetrieveAPIView):
+#     queryset = User.objects.all()
+#     serializer_class = UserSerializer
 
-#     if request.method == 'GET':
-#         serializer = MCQquestionSerializer(question)
-#         return JsonResponse(serializer.data)
 
-#     elif request.method == 'PUT':
-#         data = JSONParser().parse(request)
-#         serializer = MCQquestionSerializer(question, data=data)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return JsonResponse(serializer.data)
-#         return JsonResponse(serializer.errors, status=400)
+class TextViewset(ModelViewSet):
+    queryset = TextQuestion.objects.all()
+    serializer_class = TextSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
 
-#     elif request.method == 'DELETE':
-#         question.delete()
-#         return HttpResponse(status=204)
+    def create(self, request):
+        request.data["questionInfo"]["creator"] = request.user.username
+        # print("\nIn Viewset\n-----------------------\n{}\n\n\n".format(request.data))
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+#
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def retrieve(self, request, pk=None, format=None):
+        question = get_object_or_404(TextQuestion, pk=pk)
+        serializer = self.serializer_class(question)
+        return Response(serializer.data)
+
+    def destory(self, request, pk=None, format=None):
+        question = get_object(pk=pk)
+        question.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+        
+
+
+
+class HintViewset(ModelViewSet):
+    queryset = Hintquestion.objects.all()
+    serializer_class = HintSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+
+    def create(self, request):
+        request.data["questionInfo"]["creator"] = request.user.username
+        # print("\nIn Viewset\n-----------------------\n{}\n\n\n".format(request.data))
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+#
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def retrieve(self, request, pk=None, format=None):
+        question = get_object_or_404(Hintquestion, pk=pk)
+        serializer = self.serializer_class(question)
+        return Response(serializer.data)
+
+    def destory(self, request, pk=None, format=None):
+        question = get_object(pk=pk)
+        question.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class MCQViewset(ModelViewSet):
+    queryset = MCQquestion.objects.all()
+    serializer_class = MCQSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+
+    def create(self, request):
+        request.data["questionInfo"]["creator"] = request.user.username
+        # print("\nIn Viewset\n-----------------------\n{}\n\n\n".format(request.data))
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+#
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def retrieve(self, request, pk=None, format=None):
+        question = get_object_or_404(MCQquestion, pk=pk)
+        serializer = self.serializer_class(question)
+        return Response(serializer.data)
+
+    def destory(self, request, pk=None, format=None):
+        question = get_object(pk=pk)
+        question.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
