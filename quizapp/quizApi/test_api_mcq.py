@@ -104,3 +104,16 @@ class MCQQuestionOneTest(TestCase):
     def test_invalid_delete_mcqquestion(self):
         response = client.delete(reverse(self.url, args=[10]))
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_partial_update_mcqquestion(self):
+        payload = {
+            'questionText' : 'who gave photoelectric effect?'
+        }
+        response = client.patch(
+            reverse(self.url, args=[1]),
+            data=json.dumps(payload), 
+            content_type="application/json")
+        question = MCQquestion.objects.get(pk=1)
+        serializer = MCQSerializer(question)
+        self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+        self.assertEqual(response.data, serializer.data)

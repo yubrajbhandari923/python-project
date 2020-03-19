@@ -99,3 +99,17 @@ class TextQuestionOneTest(TestCase):
         response = client.delete(reverse(self.url, args=[10]))
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         
+    def test_partial_update_textquestion(self):
+        payload = {
+            'questionText' : 'who gave photoelectric effect?'
+        }
+        response = client.patch(
+            reverse(self.url, args=[1]),
+            data=json.dumps(payload), 
+            content_type="application/json")
+        question = TextQuestion.objects.get(pk=1)
+        serializer = TextSerializer(question)
+        self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+        self.assertEqual(response.data, serializer.data)
+
+        

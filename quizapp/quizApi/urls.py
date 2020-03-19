@@ -18,16 +18,19 @@ urlpatterns = [
     path('questions/text',
          TextViewset.as_view({'get': 'list', 'post': 'create'}), name='get_post_textquestions'),
     path('questions/text/<int:pk>',
-         TextViewset.as_view({'get': 'retrieve', 'delete': 'destroy'}), name='get_one_textquestions'),
+         TextViewset.as_view({
+             'get': 'retrieve',
+             'delete': 'destroy',
+             'patch': 'partial_update'}), name='get_one_textquestions'),
 
     path('questions/hint',
          HintViewset.as_view({'get': 'list', 'post': 'create'}), name='get_post_hintquestions'),
     path('questions/hint/<int:pk>',
-         HintViewset.as_view({'get': 'retrieve', 'delete': 'destroy'}), name='get_one_hintquestions'),
+         HintViewset.as_view({'get': 'retrieve', 'delete': 'destroy', 'patch': 'partial_update'}), name='get_one_hintquestions'),
 
     path('questions/mcq',
          MCQViewset.as_view({'get': 'list', 'post': 'create'}), name='get_post_mcqquestions'),
     path('questions/mcq/<int:pk>',
-         MCQViewset.as_view({'get': 'retrieve', 'delete': 'destroy'}), name='get_one_mcqquestions'),
+         MCQViewset.as_view({'get': 'retrieve', 'delete': 'destroy', 'patch': 'partial_update'}), name='get_one_mcqquestions'),
 ]
 urlpatterns = format_suffix_patterns(urlpatterns)

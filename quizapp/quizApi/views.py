@@ -51,19 +51,19 @@ class QuestionList(ModelViewSet):
 #         permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly
 #     ]
 
-#     def get_object(self, pk):
+#     def get_object_or_404(self, pk):
 #         try:
 #             return MCQquestion.objects.get(pk=pk)
 #         except MCQquestion.DoesNotExist:
 #             raise Http404
 
 #     def get(self, request, pk, format=None):
-#         question = self.get_object(pk)
+#         question = self.get_object_or_404(pk)
 #         serializer = MCQSerializer(question)
 #         return Response(serializer.data)
 
 #     def put(self, request, pk, format=None):
-#         question = self.get_object(pk)
+#         question = self.get_object_or_404(pk)
 #         serializer = MCQSerializer(question, data=request.data)
 #         if serializer.is_valid():
 #             serializer.save()
@@ -71,7 +71,7 @@ class QuestionList(ModelViewSet):
 #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 #     def delete(self, request, pk, format=None):
-#         question = self.get_object(pk)
+#         question = self.get_object_or_404(pk)
 #         question.delete()
 #         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -107,9 +107,18 @@ class TextViewset(ModelViewSet):
         return Response(serializer.data)
 
     def destory(self, request, pk=None, format=None):
-        question = get_object(pk=pk)
+        question = get_object_or_404(TextQuestion, pk=pk)
         question.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+    def partial_update(self, request, pk=None, format=None):
+        question = get_object_or_404(TextQuestion, pk=pk)
+        serializer = self.serializer_class(question, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
         
 
 
@@ -135,9 +144,17 @@ class HintViewset(ModelViewSet):
         return Response(serializer.data)
 
     def destory(self, request, pk=None, format=None):
-        question = get_object(pk=pk)
+        question = get_object_or_404(Hintquestion, pk=pk)
         question.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+    def partial_update(self, request, pk=None, format=None):
+        question = get_object_or_404(Hintquestion, pk=pk)
+        serializer = self.serializer_class(question, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class MCQViewset(ModelViewSet):
@@ -161,6 +178,14 @@ class MCQViewset(ModelViewSet):
         return Response(serializer.data)
 
     def destory(self, request, pk=None, format=None):
-        question = get_object(pk=pk)
+        question = get_object_or_404(MCQquestion,pk=pk)
         question.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def partial_update(self, request, pk=None, format=None):
+        question = get_object_or_404(MCQquestion, pk=pk)
+        serializer = self.serializer_class(question, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
