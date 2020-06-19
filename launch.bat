@@ -1,2 +1,1 @@
-cd quizapp
-py manage.py runserver
+py quizapp/manage.py runserver
