@@ -7,83 +7,39 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from .permissions import IsOwnerOrReadOnly
 
-from .models import AllQuestion, TextQuestion, Hintquestion, MCQquestion
-from .serializers import AllSerializer, TextSerializer, HintSerializer, MCQSerializer, UserSerializer
+from .models import Project, QuestionSet, TextQuestion, Hintquestion, MCQquestion
+from .serializers import TextSerializer, HintSerializer, MCQSerializer, ProjectSerializer, SetSerializer
 
-
-
-class QuestionList(ModelViewSet):
-    """
-        List all questions or create new
-    """
-    queryset = AllQuestion.objects.all()
-    serializer_class = AllSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+class ProjectViewSet(ModelViewSet):
+    queryset = Project.objects.all()
+    serializer_class = ProjectSerializer
+    permission_classes = [IsOwnerOrReadOnly]
 
     def create(self, request):
-
-        # print("\n\n\n {} \n\n\n {} \n\n\n {} :::: {} ".format(
-        #     request.headers, request.body, request.user, request.data))
-        #
-        request.data["creator"] = request.user.username
         print(request.data)
-        serializer = AllSerializer(data=request.data)
-#
+        serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 #
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def retrieve(self, request, pk=None, format=None):
-        question = get_object_or_404(AllQuestion, pk=pk)
-        serializer = self.serializer_class(question)
-        return Response(serializer.data)
+class SetsViewSet(ModelViewSet):
+    queryset = QuestionSet.objects.all()
+    serializer_class = SetSerializer
 
-#
+    permission_classes = [IsOwnerOrReadOnly]
+    def create(self, request):
+        print(request.data)
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-
-# class QuestionDetail(APIView):
-#     """
-#     Retrieve, update or delete a snippet instance.
-#     """
-#     permission_classes = [
-#         permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly
-#     ]
-
-#     def get_object_or_404(self, pk):
-#         try:
-#             return MCQquestion.objects.get(pk=pk)
-#         except MCQquestion.DoesNotExist:
-#             raise Http404
-
-#     def get(self, request, pk, format=None):
-#         question = self.get_object_or_404(pk)
-#         serializer = MCQSerializer(question)
-#         return Response(serializer.data)
-
-#     def put(self, request, pk, format=None):
-#         question = self.get_object_or_404(pk)
-#         serializer = MCQSerializer(question, data=request.data)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-#     def delete(self, request, pk, format=None):
-#         question = self.get_object_or_404(pk)
-#         question.delete()
-#         return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# class UserList(generics.ListAPIView):
-#     queryset = User.objects.all()
-#     serializer_class = UserSerializer
 
-
-# class UserDetail(generics.RetrieveAPIView):
-#     queryset = User.objects.all()
-#     serializer_class = UserSerializer
 
 
 class TextViewset(ModelViewSet):
@@ -93,7 +49,6 @@ class TextViewset(ModelViewSet):
 
     def create(self, request):
         request.data["questionInfo"]["creator"] = request.user.username
-        # print("\nIn Viewset\n-----------------------\n{}\n\n\n".format(request.data))
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             serializer.save()

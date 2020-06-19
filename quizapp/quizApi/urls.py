@@ -1,36 +1,51 @@
 from django.urls import path
 from django.conf.urls import include
 from rest_framework.urlpatterns import format_suffix_patterns
-from .views import QuestionList, TextViewset, HintViewset, MCQViewset
+from .views import TextViewset, HintViewset, MCQViewset, ProjectViewSet, SetsViewSet
 
 urlpatterns = [
 
-    #     path('users/', UserList.as_view()),
-    #     path('users/<int:pk>/', UserDetail.as_view()),
-
     path('api-auth/', include('rest_framework.urls')),
 
-    path('questions', QuestionList.as_view(
-        {'get': 'list', 'post': 'create'}), name='get_post_allquestions'),
-    path('questions/<int:pk>',
-         QuestionList.as_view({'get': 'retrieve'}, name='get_one_allquestions')),
+    path('project/', ProjectViewSet.as_view({'get': 'list', 'post': 'create'}),
+         name='get_post_projects'),
+    path('project/<int:pk>',
+         ProjectViewSet.as_view({
+             'get': 'retrieve',
+             'delete': 'destroy',
+             'patch': 'partial_update'}), name='get_one_projects'),
 
-    path('questions/text',
+    path('sets/', SetsViewSet.as_view({'get': 'list', 'post': 'create'}),
+         name='get_post_projects'),
+    path('sets/<int:pk>',
+         SetsViewSet.as_view({
+             'get': 'retrieve',
+             'delete': 'destroy',
+             'patch': 'partial_update'}), name='get_one_projects'),
+    path('project/<int:pk>/sets/', SetsViewSet.as_view({'get': 'list', 'post': 'create'}),
+         name='get_post_projects'),
+    path('project/<int:project-pk>/sets/<int:set-pk>', SetsViewSet.as_view({'get': 'list', 'post': 'create'}),
+         name='get_post_projects'),
+
+
+
+
+    path('text/',
          TextViewset.as_view({'get': 'list', 'post': 'create'}), name='get_post_textquestions'),
-    path('questions/text/<int:pk>',
+    path('text/<int:pk>',
          TextViewset.as_view({
              'get': 'retrieve',
              'delete': 'destroy',
              'patch': 'partial_update'}), name='get_one_textquestions'),
 
-    path('questions/hint',
+    path('hint/',
          HintViewset.as_view({'get': 'list', 'post': 'create'}), name='get_post_hintquestions'),
-    path('questions/hint/<int:pk>',
+    path('hint/<int:pk>',
          HintViewset.as_view({'get': 'retrieve', 'delete': 'destroy', 'patch': 'partial_update'}), name='get_one_hintquestions'),
 
-    path('questions/mcq',
+    path('mcq/',
          MCQViewset.as_view({'get': 'list', 'post': 'create'}), name='get_post_mcqquestions'),
-    path('questions/mcq/<int:pk>',
+    path('mcq/<int:pk>',
          MCQViewset.as_view({'get': 'retrieve', 'delete': 'destroy', 'patch': 'partial_update'}), name='get_one_mcqquestions'),
 ]
 urlpatterns = format_suffix_patterns(urlpatterns)

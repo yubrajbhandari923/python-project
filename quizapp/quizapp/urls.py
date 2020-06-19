@@ -17,6 +17,6 @@ from django.contrib import admin
 from django.urls import path, include
 from quizApi import urls
 urlpatterns = [
-    path('', include(urls)),
+    path('api/', include(urls)),
     path('admin/', admin.site.urls),
 ]

@@ -2,9 +2,60 @@ from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 
 # Create your models here.
+class Project(models.Model):
+    projectName = models.CharField(
+        max_length=250, 
+        unique=True, 
+        blank=False
+    )
+    projectDescription = models.CharField(
+        max_length=1000, 
+        blank=True,
+        null=True
+    )
+    projectCreator =  models.ForeignKey(
+        'auth.User',
+        related_name='projects',
+        on_delete=models.CASCADE,
+    )
+    organization = models.CharField(
+        max_length=250,
+        null=True,
+        blank=True
+    )
 
 
-class AllQuestion(models.Model):
+
+class QuestionSet(models.Model):
+    setName = models.CharField(
+        max_length=250, 
+        unique=True, 
+        blank=False
+    )
+    setDescription = models.CharField(
+        max_length=1000, 
+        blank=True,
+        null=True
+    )
+    setCreator =  models.ForeignKey(
+        'auth.User',
+        related_name='sets',
+        on_delete=models.CASCADE,
+    )
+    setProject = models.ManyToManyField(
+        Project,
+        related_name="Sets",
+    )
+    parentSet = models.ManyToManyField(
+        'self', 
+        symmetrical=True,
+        related_name='ChildSets',
+        blank = True
+    )
+
+
+
+class TextQuestion(models.Model):
     Fields_choice = [
         ('geo', 'Geography'),
         ('sci', "Science"),
@@ -19,17 +70,16 @@ class AllQuestion(models.Model):
         ('mix', "Mixed")
     ]
 
-    type_choices = [
-        ('MCQ', 'Multiple_Choice'),
-        ('txt', 'Text'),
-        ('hin', 'Hints')
-    ]
+    answer = models.CharField(
+        max_length=50,
+        blank=False
+    )
     created = models.DateTimeField(
         auto_now_add=True
     )
     creator = models.ForeignKey(
         'auth.User',
-        related_name='questions',
+        related_name='Textquestions',
         on_delete=models.CASCADE,
     )
     field = models.CharField(
@@ -42,38 +92,28 @@ class AllQuestion(models.Model):
         null=False,
         blank=False
     )
-    # answerText = models.CharField(
-    #     max_length=200,
-    #     null=False,
-    #     blank=False
-    # )
-    questionType = models.CharField(
-        max_length=100,
-        choices=type_choices,
-        default='txt'
+    questionSet = models.ManyToManyField(
+        QuestionSet,
+        related_name="SetQuestionsText",
     )
-
-    def __str__(self):
-        return "{} of {}".format(self.questionText, self.questionType)
-
-
-class TextQuestion(models.Model):
-    answer = models.CharField(
-        max_length=50,
-        blank=False
-    )
-    questionInfo = models.OneToOneField(
-        AllQuestion,
-        on_delete=models.CASCADE,
-        related_name='Answer_of',
-        limit_choices_to={'questionType': 'txt'}
-    )
-
     def __str__(self):
         return " 'Answer' : '{}' ".format(self.answer)
 
 
 class Hintquestion(models.Model):
+    Fields_choice = [
+        ('geo', 'Geography'),
+        ('sci', "Science"),
+        ('tec', "Technology"),
+        ('cur', 'Current Affairs'),
+        ('mus', 'Music'),
+        ('ent', 'Entertainment'),
+        ('his', 'History'),
+        ('mat', "Maths"),
+        ('lit', "Literature"),
+        ('spo', "Sports"),
+        ('mix', "Mixed")
+    ]
     noOfHints = models.IntegerField(
         validators=[
             MaxValueValidator(10),
@@ -116,15 +156,36 @@ class Hintquestion(models.Model):
         max_length=30,
         blank=True
     )
+    hintJ = models.CharField(
+        max_length=30,
+        blank=True
+    )
     correctAnswer = models.CharField(
         max_length=100,
         blank=False
     )
-    questionInfo = models.OneToOneField(
-        AllQuestion,
+
+    created = models.DateTimeField(
+        auto_now_add=True
+    )
+    creator = models.ForeignKey(
+        'auth.User',
+        related_name='Hintquestions',
         on_delete=models.CASCADE,
-        related_name='Hints_of',
-        limit_choices_to={'questionType': 'hin'}
+    )
+    field = models.CharField(
+        max_length=100,
+        choices=Fields_choice,
+        default='mix'
+    )
+    questionText = models.CharField(
+        max_length=200,
+        null=False,
+        blank=False
+    )
+    questionSet = models.ManyToManyField(
+        QuestionSet,
+        related_name="SetQuestionsHint",
     )
 
     def __str__(self):
@@ -143,6 +204,19 @@ class Hintquestion(models.Model):
 
 
 class MCQquestion(models.Model):
+    Fields_choice = [
+        ('geo', 'Geography'),
+        ('sci', "Science"),
+        ('tec', "Technology"),
+        ('cur', 'Current Affairs'),
+        ('mus', 'Music'),
+        ('ent', 'Entertainment'),
+        ('his', 'History'),
+        ('mat', "Maths"),
+        ('lit', "Literature"),
+        ('spo', "Sports"),
+        ('mix', "Mixed")
+    ]
     optA = models.CharField(
         max_length=30,
         blank=False
@@ -163,12 +237,30 @@ class MCQquestion(models.Model):
         max_length=1,
         blank=False
     )
-    questionInfo = models.OneToOneField(
-        AllQuestion,
-        on_delete=models.CASCADE,
-        related_name='Option_of',
-        limit_choices_to={'questionType': 'MCQ'}
+
+    created = models.DateTimeField(
+        auto_now_add=True
     )
+    creator = models.ForeignKey(
+        'auth.User',
+        related_name='MCQquestions',
+        on_delete=models.CASCADE,
+    )
+    field = models.CharField(
+        max_length=100,
+        choices=Fields_choice,
+        default='mix'
+    )
+    questionText = models.CharField(
+        max_length=200,
+        null=False,
+        blank=False
+    )
+    questionSet = models.ManyToManyField(
+        QuestionSet,
+        related_name="SetQuestionsMCQ",
+    )
+
 
     def __str__(self):
         return """ 'optA' : '{}','optB' : '{}','optC' : '{}','optD' : '{}','corrOpt' : '{}' """.format(
@@ -179,8 +271,3 @@ class MCQquestion(models.Model):
             self.corrOpt,
         )
 
-
-# def validate_max(val):
-#     if val <= 1 or val > 10:
-#         raise ValidationError("{} is not between 1 to 10".format(val))
-#     return
