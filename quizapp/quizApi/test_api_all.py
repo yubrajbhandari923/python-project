@@ -5,8 +5,8 @@ from django.test import TestCase, Client
 from django.urls import reverse
 
 
-from quizApi.models import AllQuestion
-from quizApi.serializers import AllSerializer
+from .models import AllQuestion
+from .serializers import AllSerializer
 from django.contrib.auth.models import User
 client = APIClient()
 
